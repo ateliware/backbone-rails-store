@@ -141,6 +141,8 @@ class BackboneRailsStoreController < ApplicationController
     response = {}
     begin
       ActiveRecord::Base.transaction do
+        puts session[:current_user]
+        current_user = session[:current_user]
 
         # Models to be searched
         models = params[:searchModels]
@@ -151,7 +153,7 @@ class BackboneRailsStoreController < ApplicationController
           page_data = response[:pageData] = {}
           models.each do |model_info|
             rails_class = acl_scoped_class(model_info[:railsClass], :read)
-            result = rails_class.rails_store_search(model_info[:searchParams])
+            result = rails_class.rails_store_search(model_info[:searchParams], current_user.org_id)
             page = model_info[:page].to_i
             page = 1 if page == 0
             limit = model_info[:limit].to_i
