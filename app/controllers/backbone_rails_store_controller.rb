@@ -142,7 +142,7 @@ class BackboneRailsStoreController < ApplicationController
     begin
       ActiveRecord::Base.transaction do
         user_id = session[:current_user]
-        
+
         # Models to be searched
         models = params[:searchModels]
         if models
@@ -152,7 +152,7 @@ class BackboneRailsStoreController < ApplicationController
           page_data = response[:pageData] = {}
           models.each do |model_info|
             rails_class = acl_scoped_class(model_info[:railsClass], :read)
-            result = rails_class.rails_store_search(model_info[:searchParams], user_id)
+            result = rails_class.rails_store_search(model_info[:searchParams])#, user_id)
             page = model_info[:page].to_i
             page = 1 if page == 0
             limit = model_info[:limit].to_i
@@ -198,6 +198,7 @@ class BackboneRailsStoreController < ApplicationController
     response = {}
     begin
       ActiveRecord::Base.transaction do
+        user_id = session[:current_user]
 
         # First persist models
         models = params[:commitModels]
@@ -206,6 +207,7 @@ class BackboneRailsStoreController < ApplicationController
           set_after_create = []
           models_ids = response[:modelsIds] = {}
           models.each do |key, model_info|
+            binding.pry
             klass = model_info[:railsClass]
             model_info[:data].each do |model|
               if model['id']
@@ -243,7 +245,7 @@ class BackboneRailsStoreController < ApplicationController
                   end
                 end
               end
-              saved = server_model.save
+              saved = server_model.save false, user_id
               raise_error(server_model) unless saved
             end
           end
