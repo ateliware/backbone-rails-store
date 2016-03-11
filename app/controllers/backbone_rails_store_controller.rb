@@ -46,7 +46,10 @@ class BackboneRailsStoreController < ApplicationController
                       :ids => [model.id]
                   }
                                        }))
-              session[:current_user] = model.id if model
+              if model
+                session[:current_user] = model.id
+                session[:org_id] = model.org_id
+              end
             end
           end
         end
@@ -141,7 +144,7 @@ class BackboneRailsStoreController < ApplicationController
     response = {}
     begin
       ActiveRecord::Base.transaction do
-        user_id = session[:current_user]
+        org_id = session[:org_id]
 
         # Models to be searched
         models = params[:searchModels]
@@ -152,7 +155,13 @@ class BackboneRailsStoreController < ApplicationController
           page_data = response[:pageData] = {}
           models.each do |model_info|
             rails_class = acl_scoped_class(model_info[:railsClass], :read)
-            result = rails_class.rails_store_search(model_info[:searchParams])#, user_id)
+
+            if rails_class.method(:rails_store_search).arity < 2
+              result = rails_class.rails_store_search(model_info[:searchParams])
+            else
+              result = rails_class.rails_store_search(model_info[:searchParams], org_id)
+            end
+
             page = model_info[:page].to_i
             page = 1 if page == 0
             limit = model_info[:limit].to_i
@@ -198,7 +207,6 @@ class BackboneRailsStoreController < ApplicationController
     response = {}
     begin
       ActiveRecord::Base.transaction do
-        user_id = session[:current_user]
 
         # First persist models
         models = params[:commitModels]
@@ -207,7 +215,6 @@ class BackboneRailsStoreController < ApplicationController
           set_after_create = []
           models_ids = response[:modelsIds] = {}
           models.each do |key, model_info|
-            binding.pry
             klass = model_info[:railsClass]
             model_info[:data].each do |model|
               if model['id']
@@ -245,7 +252,7 @@ class BackboneRailsStoreController < ApplicationController
                   end
                 end
               end
-              saved = server_model.save false, user_id
+              saved = server_model.save
               raise_error(server_model) unless saved
             end
           end
