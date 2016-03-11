@@ -67,6 +67,7 @@ class BackboneRailsStoreController < ApplicationController
     response = {}
     ActiveRecord::Base.transaction do
       session[:current_user] = nil
+      session[:org_id]
     end
     respond_to do |format|
       format.json { render json: response }
@@ -221,6 +222,7 @@ class BackboneRailsStoreController < ApplicationController
                 server_model = acl_scoped_class(klass, :write).find(model['id'])
                 raise_error_hash(klass, 'no write permission') unless server_model
               else
+                binding.pry
                 server_model = klass.constantize.create(model)
                 raise_error(server_model) unless server_model.errors.empty?
                 new_models[model['cid']] = server_model
@@ -252,7 +254,13 @@ class BackboneRailsStoreController < ApplicationController
                   end
                 end
               end
-              saved = server_model.save
+
+              if server_model.method(:save).arity < 1
+                saved = server_model.save
+              else
+                saved = server_model.save false, org_id
+              end
+
               raise_error(server_model) unless saved
             end
           end
