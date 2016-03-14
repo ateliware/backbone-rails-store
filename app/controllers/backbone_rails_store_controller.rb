@@ -146,7 +146,7 @@ class BackboneRailsStoreController < ApplicationController
     begin
       ActiveRecord::Base.transaction do
         org_id = session[:org_id]
-        puts "Find with org_id: #{org_id}"
+        
         # Models to be searched
         models = params[:searchModels]
         if models
@@ -157,8 +157,7 @@ class BackboneRailsStoreController < ApplicationController
           models.each do |model_info|
             rails_class = acl_scoped_class(model_info[:railsClass], :read)
 
-            binding.pry
-            if rails_class.method(:rails_store_search).arity < 2
+            if (!defined? rails_class.rails_store_search) || rails_class.method(:rails_store_search).arity < 2
               result = rails_class.rails_store_search(model_info[:searchParams])
             else
               result = rails_class.rails_store_search(model_info[:searchParams], org_id)
