@@ -157,7 +157,7 @@ class BackboneRailsStoreController < ApplicationController
           models.each do |model_info|
             rails_class = acl_scoped_class(model_info[:railsClass], :read)
 
-            if (!defined? rails_class.rails_store_search) || rails_class.method(:rails_store_search).arity < 2
+            if defined? rails_class.rails_store_search && rails_class.method(:rails_store_search).arity < 2
               result = rails_class.rails_store_search(model_info[:searchParams])
             else
               result = rails_class.rails_store_search(model_info[:searchParams], org_id)
@@ -226,7 +226,6 @@ class BackboneRailsStoreController < ApplicationController
                 server_model = acl_scoped_class(klass, :write).find(model['id'])
                 raise_error_hash(klass, 'no write permission') unless server_model
               else
-                binding.pry
                 server_model = klass.constantize.create(model)
                 raise_error(server_model) unless server_model.errors.empty?
                 new_models[model['cid']] = server_model
@@ -267,7 +266,7 @@ class BackboneRailsStoreController < ApplicationController
               raise_error(server_model) unless saved
             end
           end
-          
+
           set_after_create.each do |info|
             info[:model][info[:attr]] = new_models[info[:temp_id]].id
             saved = info[:model].save
