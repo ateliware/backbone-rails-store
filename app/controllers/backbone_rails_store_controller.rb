@@ -157,8 +157,9 @@ class BackboneRailsStoreController < ApplicationController
           models.each do |model_info|
             rails_class = acl_scoped_class(model_info[:railsClass], :read)
 
-            if (defined? rails_class.rails_store_search) == 'method' && rails_class.method(:rails_store_search).arity == 1
-              result = rails_class.rails_store_search(model_info[:searchParams])
+            search_method = model_info[:railsClass].constantize.method(:rails_store_search) # gets method to check its arity
+            if search_method.arity < 2
+              result = rails_class.rails_store_search(model_info[:searchParams]) # execute method through rails_class, to ensure scope
             else
               result = rails_class.rails_store_search(model_info[:searchParams], org_id)
             end
