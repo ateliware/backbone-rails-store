@@ -146,7 +146,7 @@ class BackboneRailsStoreController < ApplicationController
     begin
       ActiveRecord::Base.transaction do
         org_id = session[:org_id]
-
+        puts "Find with org_id: #{org_id}"
         # Models to be searched
         models = params[:searchModels]
         if models
@@ -235,7 +235,7 @@ class BackboneRailsStoreController < ApplicationController
                 } if not params[:refreshModels][key]
                 params[:refreshModels][key][:ids].push(server_model.id)
               end
-
+              binding.pry
               updated = server_model.update_attributes(model)
               raise_error(server_model) unless updated
 
@@ -255,6 +255,7 @@ class BackboneRailsStoreController < ApplicationController
                 end
               end
 
+              binding.pry
               if server_model.method(:save).arity < 1
                 saved = server_model.save
               else
@@ -264,7 +265,7 @@ class BackboneRailsStoreController < ApplicationController
               raise_error(server_model) unless saved
             end
           end
-
+          binding.pry
           set_after_create.each do |info|
             info[:model][info[:attr]] = new_models[info[:temp_id]].id
             saved = info[:model].save
