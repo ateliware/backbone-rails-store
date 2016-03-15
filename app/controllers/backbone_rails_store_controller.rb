@@ -349,10 +349,12 @@ class BackboneRailsStoreController < ApplicationController
 
   def upload
     response = {success: true}
+    org_id = session[:org_id]
     begin
       ActiveRecord::Base.transaction do
         klass = params[:railsClass].constantize
         field = params[:railsAttr]
+        binding.pry
         f = klass.create()
         data = {field.to_sym => request.request_parameters[:qqfile]}
         data.merge!(params[:modelParams]) if params[:modelParams]
