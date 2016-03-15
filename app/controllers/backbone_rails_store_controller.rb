@@ -354,11 +354,12 @@ class BackboneRailsStoreController < ApplicationController
       ActiveRecord::Base.transaction do
         klass = params[:railsClass].constantize
         field = params[:railsAttr]
-        binding.pry
+
         f = klass.create()
         data = {field.to_sym => request.request_parameters[:qqfile]}
         data.merge!(params[:modelParams]) if params[:modelParams]
         data['org_id'] = org_id
+        binding.pry
         f.update_attributes(data)
         response[:id] = f.id
       end
